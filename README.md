@@ -16,9 +16,9 @@ Open http://127.0.0.1:3000. `pnpm run check` checks JavaScript syntax; `node --t
 
 - Search and filter by office, state, and election level; browse pages of races, save a personal watchlist in browser local storage, and open race details.
 - The U.S. Senate list includes 33 regular elections and the Florida and Ohio special elections. The Texas Senate list includes 16 regular contests and the District 22 special election, each separately selectable. Existing featured-election IDs are preserved. See [ELECTION-SOURCES.md](ELECTION-SOURCES.md) for schedule references.
-- Official Cameron County and Texas results links, KRGV election coverage, ValleyCentral newsroom links, official election offices for the other states with Senate races, and AP national election coverage. State election-office portals and AP are direct links, clearly labeled separately from monitored sources.
-- Server attempts to retrieve source pages every 60 seconds while the dashboard is open. It extracts election-related links and labels retrieval times. Errors are displayed without fabricated results. No browser CORS proxy is required.
-- This is a source-monitoring foundation, not a live vote-count aggregator. Links may include historical or unrelated races. No candidates, vote counts, or race calls are synthesized. Source changes refer to extracted links, not vote changes.
+- Candidate-first cards with blue Democratic names, red Republican names, one-click adding, current counts and shares, source-labeled reporting progress, and source comparisons inside the dashboard.
+- Direct Texas official count adapter and a partial national Senate count adapter using official state data via Open America. Checks run while the dashboard is open; upstream caching limits duplicate requests. The app does not turn missing counts into zero.
+- Final vote-share and win-probability range fields are implemented, but no forecast or newsroom winner-call provider is connected. Missing values are clearly unavailable. See [RESULTS-DATA.md](RESULTS-DATA.md) for coverage, reporting units, data contracts, and limitations. Cameron County local candidate counts still need an election-night feed.
 - No user accounts, cross-device sync, push notifications, or background polling. Cloudflare publishes the site from the connected GitHub repository after changes are committed and pushed.
 
 ## Next integration

@@ -18,6 +18,6 @@ Authoritative references:
 - [Ohio Secretary of State: election directives, including 2025-54 for the U.S. Senate special election](https://www.ohiosos.gov/elections/elections-administration/directives)
 - [FEC: official state election office directory](https://www.fec.gov/introduction-campaign-finance/how-to-research-public-records/state-election-offices/)
 
-Official state links come from the FEC directory. They are election-office portals, not guaranteed race-specific result feeds. Users must select the 2026 election and appropriate office at the source. AP supplies a national election coverage link for U.S. Senate races. Source links and imported vote counts are distinct; vote counts and race calls are not imported in this release.
+The catalog retains official state links from the FEC directory for provenance. The current UI displays counts directly instead of providing monitoring links. Texas counts and partial national Senate counts are connected; no AP, forecast, or newsroom winner-call feed is connected. See [RESULTS-DATA.md](RESULTS-DATA.md) for the current data contracts and coverage limits.
 
 All original featured-election IDs are preserved, including the Texas U.S. Senate ID `us-senate`, Texas congressional IDs `house-1` through `house-38`, and the two state legislature collection IDs. Collections allow users who previously followed them to browse the new individual districts.

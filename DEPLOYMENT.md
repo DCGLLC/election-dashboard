@@ -37,6 +37,6 @@ With Node.js 24 or later, run `node --use-system-ca server.mjs`, then visit `htt
 
 ## Current data limits
 
-The site automatically retrieves election-related links from the official county, official state, KRGV, and ValleyCentral pages. It does not import candidate vote totals or make race calls. Links may include older elections. County and district-wide results must not be combined without a proper race-level data adapter.
+The site imports Texas official candidate counts and partial national U.S. Senate counts from official state election offices via Open America. Dashboard cards show candidate names, party colors, and counts directly. Forecast ranges and source comparisons are supported by the view model, but no forecast or newsroom-call provider is connected. Cameron County local candidate counts are not connected. See RESULTS-DATA.md for coverage and reporting-unit details. Missing data is never presented as zero or an inferred winner.
 
 Watchlists are stored on the user's device. Supabase is not required for this deployment. Add authenticated accounts and ownership policies if cross-device sync is introduced later.
