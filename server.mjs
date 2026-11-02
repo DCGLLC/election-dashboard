@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {getSources} from './sources.mjs';
 import {getResults} from './results.mjs';
 const types={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript'};
-const files={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/catalog.js':'catalog.js','/cameron.js':'cameron.js','/race-view.js':'race-view.js'};
+const files={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/catalog.js':'catalog.js','/cameron.js':'cameron.js','/race-view.js':'race-view.js','/news-view.js':'news-view.js'};
 const port=Number(process.env.PORT||3000);
 http.createServer(async(req,res)=>{
   const path=new URL(req.url,'http://localhost').pathname;

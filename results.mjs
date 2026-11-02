@@ -1,5 +1,7 @@
 import {races} from './public/catalog.js';
 import {getCameronResults} from './cameron-feed.mjs';
+import {getNews} from './news-feed.mjs';
+import {federalRaceKey} from './public/news-view.js';
 
 const DATE='2026-11-03';
 const cache=new Map();
@@ -101,11 +103,12 @@ function expectedReports(r,tx,national,county){
   return reports;
 }
 export async function getResults(){
-  const [tx,national,county]=await Promise.all([
+  const [tx,national,county,news]=await Promise.all([
     fetchCached('texas-official','https://electionresults.sos.state.tx.us/results.html',parseTexas),
     fetchCached('official-via-openamerica','https://openamerica.io/elections/results.json?year=2026&office=Senate',parseOpenAmerica),
-    getCameronResults()
+    getCameronResults(),
+    getNews()
   ]);
-  const results={};for(const r of races)results[r.id]={id:r.id,reports:expectedReports(r,tx,national,county),forecasts:[]};
+  const results={};for(const r of races)results[r.id]={id:r.id,reports:expectedReports(r,tx,national,county),forecasts:[],news:news.reports.filter(n=>n.raceId===federalRaceKey(r)),newsDocuments:federalRaceKey(r)?news.documents:undefined};
   return {electionDate:DATE,retrievedAt:new Date().toISOString(),races:results,feeds:[{id:'texas-official',name:'Texas Secretary of State',status:tx.status,races:Object.keys(tx.reports).length,checkedAt:tx.checkedAt},{id:'official-via-openamerica',name:'Official state election offices via Open America',status:national.status,races:Object.keys(national.reports).length,checkedAt:national.checkedAt},{id:'forecasts',name:'Forecasts & newsroom winner calls',status:'not-connected',races:0},{id:'cameron-official',name:'Cameron County · county ballots only',status:county.status,races:Object.keys(county.reports).length,contests:86,checkedAt:county.checkedAt}]};
 }

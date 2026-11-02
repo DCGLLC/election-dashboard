@@ -20,6 +20,7 @@ Open http://127.0.0.1:3000. `pnpm run check` checks JavaScript syntax; `node --t
 - Direct Texas official count adapter and a partial national Senate count adapter using official state data via Open America. Checks run while the dashboard is open; upstream caching limits duplicate requests. The app does not turn missing counts into zero.
 - Cameron County includes all 86 contests from the official November ballot set, with category filters and individual or bulk adding. County summary discovery and parsing are implemented; current county requests are blocked upstream and no November count report has been verified. See [CAMERON-COUNTY.md](CAMERON-COUNTY.md).
 - Final vote-share and win-probability range fields are implemented, but no forecast or newsroom winner-call provider is connected. Missing values are clearly unavailable. See [RESULTS-DATA.md](RESULTS-DATA.md) for coverage, reporting units, data contracts, and limitations.
+- Federal details show FOX News, CNN, NBC News and ABC News polling/ratings with a separate numeric average above them. Initial coverage is partial and limited to verified Senate documents; there are no verified House polls or numerical probability forecasts yet. See [NEWS-DATA.md](NEWS-DATA.md) for exact coverage, date filters, provenance and refresh limitations.
 - No user accounts, cross-device sync, push notifications, or background polling. Cloudflare publishes the site from the connected GitHub repository after changes are committed and pushed.
 
 ## Next integration

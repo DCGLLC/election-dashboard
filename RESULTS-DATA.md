@@ -18,6 +18,8 @@ Retrieval time is distinct from the source's update time. Texas's source timesta
 
 No forecast or newsroom-call provider is connected. The user deferred paid-feed options. UI fields display `—` and explicit unavailable states; the service returns an empty `forecasts` array. Candidate-name colors identify reported parties (D blue, R red, others neutral), not race calls.
 
+Federal races additionally expose a `news` array containing verified public polls and qualitative ratings from registered FOX, CNN, NBC and ABC documents. This is separate from numerical model forecasts. The average and source comparison appear in race details; see [NEWS-DATA.md](NEWS-DATA.md) for partial coverage and refresh limits.
+
 The view model supports both requested metrics independently: `finalVoteShare` (expected final share, percent) and `winProbability` (probability of winning, percent). Ranges take the minimum and maximum reported values across unique, available sources for the same candidate and election. A single source gives a single value. These are cross-source ranges, not statistical confidence intervals, and observed vote share is never used as a forecast. Tests use clearly fictional fixtures to verify these rules; no test predictions are served by the app.
 
 Each report keeps its own candidate counts, update time, reporting units, and `calledWinnerId`. Forecast reports separately support `predictedWinnerId`. A future provider adapter must validate dates, map candidate identities and special elections explicitly, and supply its own provenance. AP and DDHQ are not advertised as connected feeds.
