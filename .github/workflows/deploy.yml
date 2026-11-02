@@ -22,9 +22,10 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run build:browser
       - run: pnpm run check
       - run: node --test
-      - run: pnpm exec wrangler deploy --dry-run
+      - run: pnpm exec wrangler deploy --config wrangler.worker.jsonc --dry-run
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: check

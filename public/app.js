@@ -2,9 +2,12 @@ import {cameronContests,cameronCategories} from './cameron.js';
 import {races,senateStates,officeOptions,filterRaces,normalizeFavorites} from './catalog.js';
 import {primaryReport,forecastRange,reportingLabel,reportStatus,currentStanding} from './race-view.js';
 import {newsNetworks,federalRaceKey,compareNews,freshNews} from './news-view.js';
+import {createAccounts} from './account.js';
 
 let saved;try{saved=JSON.parse(localStorage.getItem('valleyvote-watchlist'));}catch{}
 const favorites=new Set(normalizeFavorites(saved));
+let legacyFavorites=normalizeFavorites(saved),accountState={enabled:false,ready:false,user:null,status:'starting'},authMode='signup',authBusy=false,authMessage='';
+const accounts=createAccounts({validIds:races.map(r=>r.id),onChange:ids=>{favorites.clear();ids.forEach(id=>favorites.add(id));render();if(dialog.open)detail(selected);},onState:state=>{const previousUser=accountState.user?.id;accountState=state;if(previousUser&&previousUser!==state.user?.id)document.querySelector('#account-dialog')?.close();renderAccountControls();render();},onRecovery:()=>showAccount('recovery')});
 const main=document.querySelector('#main'),dialog=document.querySelector('#detail');
 let snapshot={races:{},feeds:[]},view='dashboard',level='All',office='All',state='All',query='',countyCategory='All',page=1,busy=false,selected=null,failed=false;
 const pageSize=18,scheduled=races.filter(r=>r.kind!=='collection');
@@ -55,7 +58,7 @@ function feedStatus(){return `<div class="feed-panels">${snapshot.feeds.length?s
 function render(){
   const active=document.activeElement?.id,cursor=active==='search'?document.activeElement.selectionStart:null;const previousTable=document.querySelector('#election-table-scroll');const tablePosition={top:previousTable?.scrollTop||0,left:previousTable?.scrollLeft||0};
   document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelector('#nav-count').textContent=favorites.size;
-  main.innerHTML=`<div class="heading"><div>${view==='dashboard'?'':'<div class="eyebrow">NOVEMBER 3, 2026 · GENERAL ELECTION</div>'}<h1>${view==='dashboard'?'My elections':view==='cameron'?'Cameron County':view==='explore'?'Add elections':'Data feed status.'}</h1>${view==='dashboard'?'':`<p class="subtitle">${view==='cameron'?'Every November 3 position and measure · Cameron County voters only.':view==='explore'?'Choose races to add to your list.':'Availability of counts, forecasts, and source winner calls.'}</p>`}</div><button class="btn primary" ${view==='cameron'?'data-add-county':`data-action="${view==='dashboard'?'explore':'dashboard'}"`}>${view==='cameron'?'+ Add all 86':view==='dashboard'?'+ Add elections':'← Dashboard'}</button></div><div class="update-bar"><span class="update-indicator ${failed?'offline':''}"></span><span>${busy?'Checking official counts…':failed?'Update failed · previous data retained':snapshot.retrievedAt?'Last checked '+time(snapshot.retrievedAt):'Waiting for first update'}</span><button class="text-button" data-refresh ${busy?'disabled':''}>↻ Refresh</button></div>
+  main.innerHTML=`${accountBanner()}<div class="heading"><div>${view==='dashboard'?'':'<div class="eyebrow">NOVEMBER 3, 2026 · GENERAL ELECTION</div>'}<h1>${view==='dashboard'?'My elections':view==='cameron'?'Cameron County':view==='explore'?'Add elections':'Data feed status.'}</h1>${view==='dashboard'?'':`<p class="subtitle">${view==='cameron'?'Every November 3 position and measure · Cameron County voters only.':view==='explore'?'Choose races to add to your list.':'Availability of counts, forecasts, and source winner calls.'}</p>`}</div><button class="btn primary" ${view==='cameron'?'data-add-county':`data-action="${view==='dashboard'?'explore':'dashboard'}"`}>${view==='cameron'?'+ Add all 86':view==='dashboard'?'+ Add elections':'← Dashboard'}</button></div><div class="update-bar"><span class="update-indicator ${failed?'offline':''}"></span><span>${busy?'Checking official counts…':failed?'Update failed · previous data retained':snapshot.retrievedAt?'Last checked '+time(snapshot.retrievedAt):'Waiting for first update'}</span><button class="text-button" data-refresh ${busy?'disabled':''}>↻ Refresh</button></div>
   ${view==='explore'?`<div class="race-shortcuts"><button data-action="cameron"><strong>86</strong><span>Cameron County contests</span></button><button data-browse="state-house"><strong>150</strong><span>Texas representatives</span></button><button data-browse="us-house"><strong>38</strong><span>Texas congressional races</span></button><button data-browse="us-senate"><strong>35</strong><span>U.S. Senate races</span></button></div>`:''}
   ${view!=='sources'?`${(view==='explore'||view==='cameron')?`<input class="search" id="search" type="search" value="${escape(query)}" placeholder="Find a state, office, or district…" aria-label="Search elections">${filterControls()}`:''}<div id="match-count" class="match-count" role="status"></div><div id="cards" class="race-list"></div><div id="pagination" class="pagination" aria-label="Election pages"></div>`:feedStatus()}`;
   if(view!=='sources'){renderCards();const table=document.querySelector('#election-table-scroll');if(table){table.scrollTop=tablePosition.top;table.scrollLeft=tablePosition.left;}}
@@ -73,7 +76,7 @@ function newsTable(candidates,values,average=false){
  return '<div class="news-table-scroll" role="region" aria-label="'+(average?'Average':'Source')+' polling and estimates" tabindex="0"><table class="news-table"><thead><tr><th>Candidate</th><th>Poll support</th><th>Est. final share</th><th>Win chance</th></tr></thead><tbody>'+candidates.map(c=>'<tr><th><span class="candidate-name '+partyClass(c.party)+'">'+escape(c.name)+' <small>'+escape(c.party)+'</small></span></th>'+['pollShare','finalVoteShare','winProbability'].map(metric=>{const v=values(c.id,metric);return '<td data-label="'+({pollShare:'Poll support',finalVoteShare:'Est. final share',winProbability:'Win chance'}[metric])+'">'+pct(average?v?.value:v)+(average?'<small>'+number(v?.sources||0)+' '+(metric==='pollShare'?'polls':'estimates')+'</small>':'')+'</td>';}).join('')+'</tr>').join('')+'</tbody></table></div>';
 }
 function newsComparison(r,data){
- if(!federalRaceKey(r))return '';
+ if(!federalRaceKey(r))return '<section class="news-comparison"><h3 id="news-comparison-title">News coverage</h3><p class="news-missing">No verified race-specific polling from FOX News, CNN, NBC News or ABC News is connected for this local or state race.</p></section>';
  const {selected,averages}=compareNews(data.news||[]);
  const names=new Map();for(const c of averages)names.set(c.id,c);
  const candidates=[...names.values()];
@@ -92,13 +95,63 @@ function newsComparison(r,data){
 function detail(id){
   if(id==='county'){navigate('cameron');return;}selected=id;const r=races.find(r=>r.id===id);if(!r)return;
   const data=dataFor(id),scroll=dialog.scrollTop,focus=document.activeElement?.id;
-  document.querySelector('#detail-content').innerHTML=`<span class="tag ${r.level}">${r.level}${r.kind==='special'?' · Special election':''}</span><h2>${escape(r.title)}</h2><p class="subtitle">${escape(r.sub)} · November 3, 2026</p>${r.scope==='cameron'?`<div class="county-scope">County voter totals only; these are separate from full statewide or district-wide results.${r.voteFor>1?` This contest elects ${r.voteFor} directors.`:''}</div>${r.description?`<details class="measure-description"><summary>Read ballot measure</summary><p>${escape(r.description)}</p></details>`:''}`:''}${newsComparison(r,data)}<div class="section-bar"><h3>Official results by source</h3><button id="detail-follow" class="btn" data-${favorites.has(id)?'remove':'add'}="${r.id}">${favorites.has(id)?'Remove race':'+ Add race'}</button></div>${r.kind==='collection'?`<div class="notice">Choose an individual race for candidate counts.<button class="btn" data-browse="${r.office}">Browse districts</button></div>`:''}${data.reports?.length?data.reports.map(report=>sourcePanel(report,data)).join(''):'<div class="empty">No count source is connected for this race.</div>'}<h3 class="forecast-heading">Forecasts & predictions</h3>${data.forecasts?.length?data.forecasts.map(report=>sourcePanel(report,data,true)).join(''):'<div class="forecast-empty"><strong>No forecast feed connected</strong><p>Final vote share, chance of winning, and predicted winners will appear here when a source provides them. Current vote leaders are never treated as predicted winners.</p></div>'}<p class="data-note">Reporting locations and precincts are not the same as the percentage of ballots counted. Each source keeps its own figures and update time.</p>`;
-  if(!dialog.open)dialog.showModal();else{dialog.scrollTop=scroll;if(focus==='detail-follow')document.getElementById(focus)?.focus({preventScroll:true});}
+  document.querySelector('#detail-content').innerHTML=`<span class="tag ${r.level}">${r.level}${r.kind==='special'?' · Special election':''}</span><h2>${escape(r.title)}</h2><p class="subtitle">${escape(r.sub)} · November 3, 2026</p>${r.scope==='cameron'?`<div class="county-scope">County voter totals only; these are separate from full statewide or district-wide results.${r.voteFor>1?` This contest elects ${r.voteFor} directors.`:''}</div>${r.description?`<details class="measure-description"><summary>Read ballot measure</summary><p>${escape(r.description)}</p></details>`:''}`:''}<nav class="detail-navigation" aria-label="Race detail sections"><button class="text-button" data-detail-section="news-comparison-title">Polls &amp; news</button><button class="text-button" data-detail-section="official-results-title">Official results</button></nav>${newsComparison(r,data)}<div class="section-bar"><h3 id="official-results-title">Official results by source</h3><button id="detail-follow" class="btn" data-${favorites.has(id)?'remove':'add'}="${r.id}">${favorites.has(id)?'Remove race':'+ Add race'}</button></div>${r.kind==='collection'?`<div class="notice">Choose an individual race for candidate counts.<button class="btn" data-browse="${r.office}">Browse districts</button></div>`:''}${data.reports?.length?data.reports.map(report=>sourcePanel(report,data)).join(''):'<div class="empty">No count source is connected for this race.</div>'}<h3 class="forecast-heading">Forecasts & predictions</h3>${data.forecasts?.length?data.forecasts.map(report=>sourcePanel(report,data,true)).join(''):'<div class="forecast-empty"><strong>No forecast feed connected</strong><p>Final vote share, chance of winning, and predicted winners will appear here when a source provides them. Current vote leaders are never treated as predicted winners.</p></div>'}<p class="data-note">Reporting locations and precincts are not the same as the percentage of ballots counted. Each source keeps its own figures and update time.</p>`;
+  if(!dialog.open){dialog.showModal();dialog.scrollTop=0;}else{dialog.scrollTop=scroll;if(focus==='detail-follow')document.getElementById(focus)?.focus({preventScroll:true});}
 }
+
+function renderAccountControls(){
+ const target=document.querySelector('#account-controls');if(!target)return;
+ target.innerHTML=accountState.user?'<button class="account-button" data-account="profile" aria-label="Your account">My account</button>':'<button class="account-button" data-account="signin">Sign in</button><button class="account-button filled" data-account="signup">Create account</button>';
+}
+function accountBanner(){
+ if(!accountState.enabled)return view==='dashboard'?'<div class="account-notice">Accounts are being set up. Your selections are currently saved on this device only.</div>':'';
+ if(!accountState.ready)return '<div class="account-notice" role="status">Loading your account…</div>';
+ if(!accountState.user)return view==='dashboard'?'<section class="account-welcome"><h2>Your elections. On every device.</h2><p>Create an account with your email and a password, then sign in on your phone to see the same dashboard.</p><button class="btn primary" data-account="signup">Create account</button><button class="text-button" data-account="signin">Sign in</button></section>':'';
+ const status={starting:'Connecting…',loading:'Loading your dashboard…',saving:'Saving your changes…',synced:'Dashboard synced across your devices',offline:'Changes have not synced. They are saved on this device and will retry.'}[accountState.status]||'Connecting…';
+ return '<div class="account-notice" role="status">'+escape(status)+(accountState.status==='offline'?'<button class="text-button" data-sync-account>Retry</button>':'')+'</div>'+(legacyFavorites.length?'<div class="account-notice">'+legacyFavorites.length+' elections are saved on this device.<button class="text-button" data-import-local>Add them to my account</button></div>':'');
+}
+function showAccount(mode='signup'){
+ if(dialog.open)dialog.close();authMode=mode;authMessage='';authBusy=false;renderAccountForm();const modal=document.querySelector('#account-dialog');if(!modal.open)modal.showModal();modal.scrollTop=0;
+}
+function renderAccountForm(){
+ const target=document.querySelector('#account-content');
+ if(!accountState.enabled){target.innerHTML='<h2 id="account-title">Accounts are coming</h2><p>Account setup is not finished yet. Your current elections stay saved on this device.</p>';return;}
+ if(authMode==='profile'&&accountState.user){target.innerHTML='<h2 id="account-title">Your account</h2><p>'+escape(accountState.user.email)+'</p><p>Sign in with this email on your phone to use the same dashboard.</p><button class="btn" data-sign-out>Sign out on this device</button><p id="auth-message" role="status">'+escape(authMessage)+'</p>';return;}
+ const title={signup:'Create your account',signin:'Welcome back',reset:'Reset your password',recovery:'Choose a new password'}[authMode]||'Welcome back';
+ const button={signup:'Create account',signin:'Sign in',reset:'Send reset link',recovery:'Save password'}[authMode];
+ target.innerHTML='<h2 id="account-title">'+title+'</h2><p>'+(authMode==='signup'?'Just your email and a password. Save your elections and use the same dashboard on any device.':authMode==='signin'?'Sign in to your saved election dashboard.':authMode==='reset'?'We’ll email you a password reset link.':'Enter a new password for your account.')+'</p><form id="account-form">'+(authMode!=='recovery'?'<label>Email<input id="account-email" name="email" type="email" autocomplete="email" required></label>':'')+(authMode!=='reset'?'<label>Password<input id="account-password" name="password" type="password" autocomplete="'+(authMode==='signin'?'current-password':'new-password')+'" minlength="8" required></label>':'')+'<p id="auth-message" class="auth-message" role="status" aria-live="polite">'+escape(authMessage)+'</p><button class="btn primary" type="submit" '+(authBusy?'disabled':'')+'>'+(authBusy?'Please wait…':button)+'</button></form><div class="account-links">'+(authMode==='signup'?'<button class="text-button" data-account="signin">Already have an account? Sign in</button>':authMode==='signin'?'<button class="text-button" data-account="signup">Create account</button><button class="text-button" data-account="reset">Forgot password?</button>':'<button class="text-button" data-account="signin">Back to sign in</button>')+'</div>';
+}
+function accountError(error){
+ const code=error?.code||'';
+ if(code==='invalid_credentials')return 'That email and password do not match. Please try again.';
+ if(code==='email_not_confirmed')return 'Check your email to finish creating your account.';
+ if(code==='weak_password')return 'Choose a stronger password with at least 8 characters.';
+ if(code==='user_already_exists')return 'Try signing in with this email, or reset your password.';
+ if(/rate|limit/.test(code))return 'Please wait a moment before trying again.';
+ return 'We could not connect to your account. Please try again.';
+}
+async function signOutAccount(){
+ try{await accounts.signOut();document.querySelector('#account-dialog').close();toast('Signed out on this device');}
+ catch(error){authMessage=accountError(error);renderAccountForm();}
+}
+document.addEventListener('submit',async e=>{
+ if(e.target.id!=='account-form')return;e.preventDefault();if(authBusy||!accountState.enabled)return;
+ const email=e.target.elements.email?.value.trim(),password=e.target.elements.password?.value,mode=authMode;
+ if(!accountState.ready){authMessage='Still connecting. Please try again in a moment.';document.querySelector('#auth-message').textContent=authMessage;return;}
+ authBusy=true;const submit=e.target.querySelector('[type="submit"]');submit.disabled=true;submit.textContent='Please wait…';
+ try{
+  if(mode==='reset'){await accounts.resetPassword(email);authMessage='If this email has an account, a reset link is on its way.';}
+  else if(mode==='recovery'){await accounts.updatePassword(password);document.querySelector('#account-dialog').close();toast('Password updated');}
+  else{const data=await (mode==='signup'?accounts.signUp(email,password):accounts.signIn(email,password));if(data.session){document.querySelector('#account-dialog').close();toast(mode==='signup'?'Your account is ready':'Signed in');}else authMessage='Check your email to finish creating your account.';}
+ }catch(error){authMessage=accountError(error);}
+ finally{authBusy=false;const message=document.querySelector('#auth-message');if(message)message.textContent=authMessage;const form=document.querySelector('#account-form');if(form){const input=form.elements.password;if(input)input.value='';const button=form.querySelector('[type="submit"]');button.disabled=false;button.textContent={signup:'Create account',signin:'Sign in',reset:'Send reset link',recovery:'Save password'}[mode];}}
+});
+
 function reset(){level='All';office='All';state='All';query='';countyCategory='All';page=1;}
 function navigate(next){document.querySelector('#election-table-scroll')?.scrollTo(0,0);view=next;reset();if(next==='cameron'){office='cameron';state='TX';}render();window.scrollTo(0,0);}
 function browse(next){if(dialog.open)dialog.close();view='explore';reset();office=next;if(next!=='us-senate')state='TX';render();}
-function persist(){try{localStorage.setItem('valleyvote-watchlist',JSON.stringify([...favorites]));}catch{}render();if(dialog.open)detail(selected);}
+function persist(){if(!accountState.enabled){try{localStorage.setItem('valleyvote-watchlist',JSON.stringify([...favorites]));legacyFavorites=[...favorites];}catch{}}render();if(dialog.open)detail(selected);}
+function changeRace(id,selected){if(accountState.enabled){if(!accountState.ready||!accountState.user){showAccount('signup');return false;}return accounts.setSelected(id,selected);}selected?favorites.add(id):favorites.delete(id);persist();return true;}
 function toast(message){const el=document.querySelector('#toast');el.textContent=message;el.style.display='block';clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.style.display='none',2000);}
 document.addEventListener('input',e=>{if(e.target.id==='search'){query=e.target.value;page=1;renderCards();}});
 document.addEventListener('change',e=>{if(e.target.id==='county-category'){countyCategory=e.target.value;page=1;renderCards();return;}if(e.target.id==='office-filter'||e.target.id==='state-filter'){if(e.target.id==='office-filter'){office=e.target.value;if(office==='local'){level='Local';office='All';state='All';}}else state=e.target.value;page=1;render();}});
@@ -109,11 +162,17 @@ document.addEventListener('click',e=>{
   if(b.dataset.browse)browse(b.dataset.browse);
   if(b.hasAttribute('data-reset')){reset();render();}
   if(b.dataset.page){page=Number(b.dataset.page);renderCards();document.querySelector('#match-count').scrollIntoView({block:'start'});}
-  if(b.hasAttribute('data-add-county')){cameronContests.forEach(r=>favorites.add(r.id));favorites.delete('county');persist();toast('All Cameron County contests added');}
-  if(b.dataset.add){favorites.add(b.dataset.add);persist();toast('Race added to your dashboard');}
-  if(b.dataset.remove){favorites.delete(b.dataset.remove);persist();}
+  if(b.hasAttribute('data-add-county')){if(accountState.enabled&&!accountState.user){showAccount('signup');return;}if(accountState.enabled)accounts.setMany([...cameronContests.map(r=>[r.id,true]),['county',false]]);else{cameronContests.forEach(r=>favorites.add(r.id));favorites.delete('county');persist();}toast('Cameron County contests added');}
+  if(b.dataset.add){if(changeRace(b.dataset.add,true))toast('Race added to your dashboard');}
+  if(b.dataset.remove)changeRace(b.dataset.remove,false);
   if(b.dataset.detail)detail(b.dataset.detail);
-  if(b.hasAttribute('data-refresh'))refresh();
+  if(b.dataset.account)showAccount(b.dataset.account);
+  if(b.hasAttribute('data-sign-out'))void signOutAccount();
+  if(b.hasAttribute('data-sync-account'))void accounts.sync();
+  if(b.hasAttribute('data-import-local')){if(accountState.user){accounts.setMany(legacyFavorites.map(id=>[id,true]));legacyFavorites=[];try{localStorage.removeItem('valleyvote-watchlist');}catch{}render();}}
+  if(b.classList.contains('account-close'))document.querySelector('#account-dialog').close();
+  if(b.dataset.detailSection)document.getElementById(b.dataset.detailSection)?.scrollIntoView({block:'start',behavior:'smooth'});
+  if(b.hasAttribute('data-refresh')){refresh();void accounts.sync();}
   if(b.classList.contains('close'))dialog.close();
 });
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
@@ -123,4 +182,4 @@ async function refresh(){
   catch{failed=true;snapshot={...snapshot,races:Object.fromEntries(Object.entries(snapshot.races).map(([id,r])=>[id,{...r,reports:r.reports.map(report=>report.candidates?.length?{...report,status:'stale'}:report)}]))};}
   finally{busy=false;render();if(dialog.open)detail(selected);}
 }
-render();refresh();setInterval(()=>{if(!document.hidden)refresh();},60000);
+render();renderAccountControls();void accounts.init();refresh();setInterval(()=>{if(!document.hidden)refresh();},60000);

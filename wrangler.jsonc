@@ -1,12 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "valley-vote",
-  "main": "worker.mjs",
-  "compatibility_date": "2026-11-02",
-  "workers_dev": true,
-  "assets": {
-    "directory": "./public",
-    "binding": "ASSETS",
-    "run_worker_first": ["/api/*"]
-  }
+  "name": "dcg-my-elections-texas",
+  "pages_build_output_dir": "./release/pages",
+  "compatibility_date": "2026-11-02"
 }

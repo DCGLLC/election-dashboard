@@ -5,17 +5,23 @@
   "type": "module",
   "scripts": {
     "start": "node --use-system-ca server.mjs",
-    "check": "node --check server.mjs && node --check sources.mjs && node --check results.mjs && node --check cameron-feed.mjs && node --check public/cameron.js && node --check worker.mjs && node --check public/catalog.js && node --check public/race-view.js && node --check public/app.js && node --check news-feed.mjs && node --check public/news-view.js",
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev"
+    "check": "node --check server.mjs && node --check sources.mjs && node --check results.mjs && node --check cameron-feed.mjs && node --check public/cameron.js && node --check worker.mjs && node --check public/catalog.js && node --check public/race-view.js && node --check public/app.js && node --check news-feed.mjs && node --check public/news-view.js && node --check public/account.js && node --check public/watchlist.js && node --check public/account-config.js",
+    "deploy": "wrangler deploy --config wrangler.worker.jsonc",
+    "dev": "wrangler dev --config wrangler.worker.jsonc",
+    "build:browser": "node scripts/build-browser.mjs",
+    "build:pages": "node scripts/build-pages.mjs",
+    "dev:pages": "wrangler pages dev release/pages"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.14",
+    "esbuild": "0.28.2",
     "wrangler": "4.156.2"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
     "unpdf": "2.1.0"
   }
 }

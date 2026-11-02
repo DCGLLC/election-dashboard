@@ -1,5 +1,7 @@
 # GitHub Desktop and Cloudflare
 
+**New account setup and requested free Pages address:** follow [ACCOUNT-SETUP.md](ACCOUNT-SETUP.md). For Pages use `pnpm run build:pages`, output `release/pages`, and project name `dcg-my-elections-texas` if available. `wrangler.jsonc` is now the Pages configuration; the original Worker configuration is preserved in `wrangler.worker.jsonc`.
+
 ## Add the existing project in GitHub Desktop
 
 1. Choose **File → Add Local Repository**.
@@ -20,7 +22,7 @@ In Cloudflare Workers & Pages, create a Worker by importing the GitHub repositor
 - Build command: `pnpm install --frozen-lockfile && pnpm run check`
 - Deploy command: `pnpm run deploy`
 
-Cloudflare will upload `public` and deploy `worker.mjs` using `wrangler.jsonc`. Open the resulting `workers.dev` URL and verify the source desk and race selection. If using Cloudflare Git integration, disable the supplied GitHub deployment workflow to avoid duplicate deployments.
+For the original Worker, `pnpm run deploy` uploads `public` and deploys `worker.mjs` using `wrangler.worker.jsonc`. Open the resulting `workers.dev` URL and verify race selection. If using Cloudflare Git integration, disable the supplied GitHub deployment workflow to avoid duplicate deployments.
 
 ### GitHub Actions
 
@@ -39,4 +41,4 @@ With Node.js 24 or later, run `node --use-system-ca server.mjs`, then visit `htt
 
 The site imports Texas official candidate counts and partial national U.S. Senate counts from official state election offices via Open America. Dashboard cards show candidate names, party colors, and counts directly. Forecast ranges and source comparisons are supported by the view model, but no forecast or newsroom-call provider is connected. Cameron County local candidate counts are not connected. See RESULTS-DATA.md for coverage and reporting-unit details. Missing data is never presented as zero or an inferred winner.
 
-Watchlists are stored on the user's device. Supabase is not required for this deployment. Add authenticated accounts and ownership policies if cross-device sync is introduced later.
+Without public Supabase configuration, watchlists remain browser-only and the UI states that accounts are still being set up. Once configured, authenticated watchlists sync through the private `dashboard_races` table. Follow ACCOUNT-SETUP.md before advertising account signup as live.
