@@ -52,7 +52,7 @@ test('office, state and search filters combine without confusing state and U.S. 
 test('existing saved race IDs survive catalog expansion and invalid IDs are dropped',()=>{
   const old=['county','governor','us-senate','house-34','state-house','state-senate','statewide'];
   assert.deepEqual(normalizeFavorites([...old,'missing','county']),old);
-  assert.deepEqual(normalizeFavorites(null),['county','governor','us-senate']);
+  assert.deepEqual(normalizeFavorites(null),[]);
   assert.deepEqual(normalizeFavorites([]),[]);
 });
 test('direct source links do not trigger dozens of background upstream requests',async()=>{

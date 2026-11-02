@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {parseTexas,parseOpenAmerica,candidateKey} from '../results.mjs';
-import {forecastRange,primaryReport,reportingLabel,reportStatus} from '../public/race-view.js';
+import {forecastRange,primaryReport,reportingLabel,reportStatus,currentStanding} from '../public/race-view.js';
 
 const row=(party,name,value)=>`<tr><td class="party">${party}</td><td class="candidate">${name}</td>${value===null?'<td class="ballot" />':`<td class="ballot">${value}</td>`}</tr>`;
 const contest=(title,rows,progress='20')=>`<div class="election">${title}</div><div class="polling">Polling Locations Reporting: ${progress}%</div><table class="election">${rows}</table>`;
@@ -37,6 +37,14 @@ test('regular and special Texas Senate elections remain separate and incomplete 
   assert.equal(data.reports['state-senate-22'].reporting.locationsIn,null);
 });
 const national=entries=>({api:1,year:2026,office:'Senate',as_of:'2026-11-04T02:00:00Z',stale:false,races:entries});
+test('compact race list distinguishes a leader from a called winner and handles ties and missing counts',()=>{
+  const candidates=[{id:'a',name:'Test A',votes:600},{id:'b',name:'Test B',votes:400}];
+  assert.deepEqual(currentStanding({candidates}),{kind:'leading',candidateIds:['a'],name:'Test A',margin:200});
+  assert.equal(currentStanding({candidates,calledWinnerId:'b'}).kind,'called');
+  assert.equal(currentStanding({candidates:candidates.map(c=>({...c,votes:500}))}).kind,'tied');
+  assert.equal(currentStanding({candidates:candidates.map(c=>({...c,votes:0}))}).kind,'awaiting');
+  assert.equal(currentStanding({candidates:[candidates[0],{...candidates[1],votes:null}]}).kind,'awaiting');
+});
 test('national adapter matches specials explicitly and never turns leading into a winner call',()=>{
   const parsed=parseOpenAmerica(national({'FL-special':{cands:[{n:'Test Florida',p:'R',v:100,pct:100}],pct_in:100},FL:{cands:[{n:'Wrong regular election',p:'D',v:100}]},GA:{cands:[{n:'Test Georgia',p:'D',v:10}],pct_in:null}}));
   assert.equal(parsed.reports['us-senate-fl'].candidates[0].name,'Test Florida');

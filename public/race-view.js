@@ -27,3 +27,15 @@ export function reportStatus(report){
   if(report.status==='awaiting-results')return 'Awaiting official results';
   return report.total>0?'Unofficial count':'Awaiting first votes';
 }
+
+export function currentStanding(report){
+  const candidates=report?.candidates||[];
+  const called=candidates.find(c=>c.id===report?.calledWinnerId);
+  if(called)return {kind:'called',candidateIds:[called.id],name:called.name,margin:null};
+  if(!candidates.length||!candidates.every(c=>typeof c.votes==='number'&&Number.isFinite(c.votes)&&c.votes>=0))return {kind:'awaiting',candidateIds:[],margin:null};
+  const sorted=[...candidates].sort((a,b)=>b.votes-a.votes);
+  if(sorted[0].votes===0)return {kind:'awaiting',candidateIds:[],margin:null};
+  const leaders=sorted.filter(c=>c.votes===sorted[0].votes);
+  if(leaders.length>1)return {kind:'tied',candidateIds:leaders.map(c=>c.id),margin:0};
+  return {kind:'leading',candidateIds:[sorted[0].id],name:sorted[0].name,margin:sorted.length>1?sorted[0].votes-sorted[1].votes:null};
+}

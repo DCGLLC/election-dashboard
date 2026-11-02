@@ -549,5 +549,5 @@ export function filterRaces(list,{level='All',office='All',state='All',query=''}
    (r.title+' '+r.sub+' '+r.state+' '+(r.office==='state-house'?'state representative state rep':r.office==='us-house'?'congress congressional representative':r.office==='us-senate'?'us senator federal senator':'')).toLowerCase().includes(t)));
 }
 export function normalizeFavorites(value) {
- return Array.isArray(value)?[...new Set(value.filter(id=>races.some(r=>r.id===id)))]:['county','governor','us-senate'];
+ return Array.isArray(value)?[...new Set(value.filter(id=>races.some(r=>r.id===id)))]:[];
 }
