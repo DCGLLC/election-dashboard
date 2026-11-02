@@ -1,0 +1,8 @@
+allowBuilds:
+  esbuild: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - wrangler@4.156.2
+  - miniflare@5.20261102.0-beta
+  - workerd@1.20261102.1
+  - '@cloudflare/workerd-*'
