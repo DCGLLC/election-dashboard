@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node --use-system-ca server.mjs",
-    "check": "node --check server.mjs && node --check sources.mjs && node --check results.mjs && node --check worker.mjs && node --check public/catalog.js && node --check public/race-view.js && node --check public/app.js",
+    "check": "node --check server.mjs && node --check sources.mjs && node --check results.mjs && node --check cameron-feed.mjs && node --check public/cameron.js && node --check worker.mjs && node --check public/catalog.js && node --check public/race-view.js && node --check public/app.js",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev"
   },
@@ -14,5 +14,8 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "dependencies": {
+    "unpdf": "2.1.0"
   }
 }

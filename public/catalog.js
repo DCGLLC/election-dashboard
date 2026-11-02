@@ -1,4 +1,5 @@
 // 2026 race catalog. Schedule and official source references: ELECTION-SOURCES.md.
+import {cameronContests} from './cameron.js';
 export const senateStates = [
   {
     "code": "AL",
@@ -529,7 +530,8 @@ const txSources = ['texas', 'krgv', 'valley'];
 export const texasSenateDistricts = [1,2,3,4,5,9,11,13,18,19,21,22,24,26,28,31];
 const txRace = (id,title,office,district,extra={}) => ({id,title,office,district,state:'TX',stateName:'Texas',level:office==='us-house'?'Federal':'State',sub:office==='us-house'?'U.S. congressional election · Texas':'State legislative election · Texas',kind:'general',sources:txSources,...extra});
 export const races = [
- {id:'county',title:'Cameron County',sub:'County & local election results',level:'Local',state:'TX',stateName:'Texas',office:'local',kind:'general',sources:['county','krgv','valley']},
+ {id:'county',title:'Cameron County · All contests',sub:'Browse all county ballot positions and measures',level:'Local',state:'TX',stateName:'Texas',office:'local',kind:'collection',sources:['county']},
+ ...cameronContests,
  {id:'governor',title:'Texas Governor',sub:'Statewide · Texas',level:'State',state:'TX',stateName:'Texas',office:'statewide',kind:'general',sources:txSources},
  ...senateStates.map(s=>({id:s.code==='TX'?'us-senate':'us-senate-'+s.code.toLowerCase(),title:'U.S. Senate · '+s.name,sub:(s.kind==='special'?'Special election · ':'Statewide · ')+s.name,state:s.code,stateName:s.name,level:'Federal',office:'us-senate',kind:s.kind,sources:s.code==='TX'?['texas','krgv','valley','ap']:['official-'+s.code.toLowerCase(),'ap']})),
  ...Array.from({length:150},(_,i)=>txRace('state-house-'+(i+1),'Texas House · District '+(i+1),'state-house',i+1)),
@@ -541,7 +543,7 @@ export const races = [
  {id:'statewide',title:'Texas statewide results',sub:'All statewide offices',level:'State',state:'TX',stateName:'Texas',office:'statewide',kind:'collection',sources:txSources}
 ];
 export const officeOptions = [
- ['All','All offices'],['local','County & local'],['statewide','Texas statewide'],['state-house','Texas state representatives'],['state-senate','Texas state senators'],['us-house','U.S. House · Texas'],['us-senate','U.S. Senate · All states']
+ ['All','All offices'],['local','County & local'],['cameron','Cameron County · all contests'],['statewide','Texas statewide'],['state-house','Texas state representatives'],['state-senate','Texas state senators'],['us-house','U.S. House · Texas'],['us-senate','U.S. Senate · All states']
 ];
 export function filterRaces(list,{level='All',office='All',state='All',query=''}={}) {
  const terms=query.trim().toLowerCase().split(/\s+/).filter(Boolean);

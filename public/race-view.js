@@ -30,6 +30,7 @@ export function reportStatus(report){
 
 export function currentStanding(report){
   const candidates=report?.candidates||[];
+  if(report?.voteFor>1)return {kind:'multi-seat',candidateIds:[],margin:null};
   const called=candidates.find(c=>c.id===report?.calledWinnerId);
   if(called)return {kind:'called',candidateIds:[called.id],name:called.name,margin:null};
   if(!candidates.length||!candidates.every(c=>typeof c.votes==='number'&&Number.isFinite(c.votes)&&c.votes>=0))return {kind:'awaiting',candidateIds:[],margin:null};

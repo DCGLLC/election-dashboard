@@ -1,4 +1,5 @@
 import {races} from './public/catalog.js';
+import {getCameronResults} from './cameron-feed.mjs';
 
 const DATE='2026-11-03';
 const cache=new Map();
@@ -84,22 +85,27 @@ async function fetchCached(id,url,parser){
     }finally{ongoing.delete(id);}
   })();ongoing.set(id,task);return task;
 }
-function expectedReports(r,tx,national){
+function expectedReports(r,tx,national,county){
   const reports=[];
   const add=(data,id,name,coverage)=>{
     const report=data.reports[r.id];
     reports.push(report?{...report,status:data.status==='unavailable'?'stale':report.status,retrievedAt:data.retrievedAt,checkedAt:data.checkedAt}:{sourceId:id,sourceName:name,type:'official',status:coverage?(data.status==='unavailable'?'unavailable':'awaiting-results'):'not-covered',candidates:[],total:null,reporting:{votesIn:null,locationsIn:null,precinctsIn:null},calledWinnerId:null,checkedAt:data.checkedAt,retrievedAt:null});
   };
-  if(r.state==='TX'&&r.office!=='local'&&r.kind!=='collection')add(tx,'texas-official','Texas Secretary of State',true);
+  if(r.state==='TX'&&r.scope!=='cameron'&&r.office!=='local'&&r.kind!=='collection')add(tx,'texas-official','Texas Secretary of State',true);
   if(r.office==='us-senate')add(national,'official-via-openamerica','Official state election offices via Open America (openamerica.io)',OA_STATES.has(r.state));
+  if(r.scope==='cameron'){
+    const known=county.reports[r.id];
+    reports.push(known?{...known,status:county.status==='unavailable'?'stale':known.status,retrievedAt:county.retrievedAt,checkedAt:county.checkedAt}:{sourceId:'cameron-official',sourceName:'Cameron County Elections',type:'official',electionDate:DATE,scope:'cameron',scopeLabel:r.scopeLabel,status:county.status==='unavailable'?'unavailable':'awaiting-results',voteFor:r.voteFor,total:null,candidates:r.roster.map(c=>({...c,votes:null,voteShare:null})),reporting:{votesIn:null,locationsIn:null,precinctsIn:null},calledWinnerId:null,rosterSource:'Official November sample ballot',checkedAt:county.checkedAt,retrievedAt:null});
+  }
   if(r.office==='local')reports.push({sourceId:'cameron-official',sourceName:'Cameron County Elections',type:'official',status:'not-connected',candidates:[],total:null,reporting:{votesIn:null,locationsIn:null,precinctsIn:null},calledWinnerId:null});
   return reports;
 }
 export async function getResults(){
-  const [tx,national]=await Promise.all([
+  const [tx,national,county]=await Promise.all([
     fetchCached('texas-official','https://electionresults.sos.state.tx.us/results.html',parseTexas),
-    fetchCached('official-via-openamerica','https://openamerica.io/elections/results.json?year=2026&office=Senate',parseOpenAmerica)
+    fetchCached('official-via-openamerica','https://openamerica.io/elections/results.json?year=2026&office=Senate',parseOpenAmerica),
+    getCameronResults()
   ]);
-  const results={};for(const r of races)results[r.id]={id:r.id,reports:expectedReports(r,tx,national),forecasts:[]};
-  return {electionDate:DATE,retrievedAt:new Date().toISOString(),races:results,feeds:[{id:'texas-official',name:'Texas Secretary of State',status:tx.status,races:Object.keys(tx.reports).length,checkedAt:tx.checkedAt},{id:'official-via-openamerica',name:'Official state election offices via Open America',status:national.status,races:Object.keys(national.reports).length,checkedAt:national.checkedAt},{id:'forecasts',name:'Forecasts & newsroom winner calls',status:'not-connected',races:0},{id:'cameron-official',name:'Cameron County local results',status:'not-connected',races:0}]};
+  const results={};for(const r of races)results[r.id]={id:r.id,reports:expectedReports(r,tx,national,county),forecasts:[]};
+  return {electionDate:DATE,retrievedAt:new Date().toISOString(),races:results,feeds:[{id:'texas-official',name:'Texas Secretary of State',status:tx.status,races:Object.keys(tx.reports).length,checkedAt:tx.checkedAt},{id:'official-via-openamerica',name:'Official state election offices via Open America',status:national.status,races:Object.keys(national.reports).length,checkedAt:national.checkedAt},{id:'forecasts',name:'Forecasts & newsroom winner calls',status:'not-connected',races:0},{id:'cameron-official',name:'Cameron County · county ballots only',status:county.status,races:Object.keys(county.reports).length,contests:86,checkedAt:county.checkedAt}]};
 }
