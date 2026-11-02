@@ -1,8 +1,5 @@
-export const sources = [
-{id:'county',name:'Cameron County Elections',type:'Official',url:'https://www.cameroncountytx.gov/elections/results/'},
-{id:'texas',name:'Texas Secretary of State',type:'Official',url:'https://electionresults.sos.state.tx.us/results.html'},
-{id:'krgv',name:'KRGV · Channel 5',type:'News',url:'https://www.krgv.com/elections'},
-{id:'valley',name:'ValleyCentral',type:'News',url:'https://www.valleycentral.com/'}];
+import {sourceDefinitions} from './public/catalog.js';
+export const sources = sourceDefinitions;
 const cache=new Map();
 const decode=s=>s.replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&#39;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
 async function check(s){
@@ -12,4 +9,4 @@ const links=[];for(const m of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*
 const hash=JSON.stringify(links);const now=new Date().toISOString();const data={...s,status:'available',checkedAt:now,changedAt:old?.hash===hash?old.data.changedAt:now,items:links.slice(s.id==='krgv'?-12:0,s.id==='krgv'?undefined:12),note:'Source page checked. Links may include historical elections; confirm the date at the source.'};cache.set(s.id,{fetched:Date.now(),hash,data});return data;
 }catch(e){return {...s,status:'unavailable',checkedAt:new Date().toISOString(),items:old?.data.items||[],note:old?'Refresh failed. Previously retrieved links may be out of date.':'Could not retrieve this source. Open it directly for the latest information.'};}}
 
-export async function getSources(){ return Promise.all(sources.map(check)); }
+export async function getSources(){ return Promise.all(sources.map(s => s.monitor ? check(s) : {...s,status:'link',items:[]})); }
