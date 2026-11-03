@@ -18,3 +18,25 @@
 @media(max-width:650px){.news-table{display:block;min-width:0;width:100%}.news-table thead{display:none}.news-table tbody{display:block}.news-table tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:12px 0;border-bottom:1px solid #dce3d4}.news-table th:first-child{grid-column:1/-1;width:auto;padding:0 0 10px;border:0}.news-table td{padding:4px 3px;text-align:left;border:0}.news-table td:before{content:attr(data-label);display:block;min-height:28px;font-size:9px;color:#657456}.news-table .candidate-name{max-width:100%;white-space:normal}.news-average{padding:14px}}
 
 .account-controls{display:flex;align-items:center;gap:7px}.account-button{border:1px solid #d7dfd1;border-radius:6px;padding:7px 10px;font-size:11px;color:var(--ink);background:white;white-space:nowrap}.account-button.filled{background:var(--ink);color:white}.account-notice{font-size:12px;padding:12px 15px;background:#eef3e7;border-radius:7px;margin-bottom:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.account-welcome{padding:22px;border:1px solid var(--border);border-radius:9px;background:white;margin-bottom:22px}.account-welcome h2{font-size:23px;margin:0 0 8px}.account-welcome p{font-size:13px;color:var(--muted)}.account-welcome .text-button{margin-left:12px}#account-dialog{width:min(440px,calc(100vw - 30px));padding:28px;border:0;border-radius:12px;max-height:90dvh;color:var(--ink)}#account-dialog::backdrop{background:#193d33aa;backdrop-filter:blur(3px)}.account-close{position:absolute;right:15px;top:12px;background:none;border:0;font-size:26px;color:#7a8778}#account-dialog h2{font-family:Georgia,serif;font-size:29px;margin:8px 0 12px}#account-dialog p{font-size:13px;line-height:1.7;color:var(--muted)}#account-form label{display:block;font-size:13px;font-weight:600;margin:18px 0}#account-form input{display:block;width:100%;padding:12px;border:1px solid var(--border);border-radius:6px;font-size:16px;margin-top:6px}#account-form>.btn{width:100%}.account-links{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:17px}.account-links button{font-size:12px}#auth-message{min-height:20px;color:#83542c}.detail-navigation{display:flex;gap:18px;padding:10px 0;border-bottom:1px solid var(--border)}.detail-navigation button{font-size:13px}#news-comparison-title,#official-results-title{scroll-margin-top:20px}@media(max-width:650px){.workspace>header{gap:8px;flex-wrap:wrap;height:auto;min-height:64px;padding-top:12px;padding-bottom:12px}.account-controls{margin-left:auto}.account-button{font-size:10px;padding:6px 8px}.account-notice{font-size:11px}.account-welcome h2{font-size:21px}#account-dialog{padding:24px}}
+/* Fit every results column on a phone; long labels wrap within their cells. */
+@media(max-width:650px){
+ .election-table{min-width:0;width:100%;font-size:9px;line-height:1.35}
+ .election-table thead th{font-size:8px;letter-spacing:0;padding:9px 3px;overflow-wrap:anywhere}
+ .election-table thead th:first-child{width:34%}
+ .election-table thead th:nth-child(2){width:20%}
+ .election-table thead th:nth-child(3){width:18%}
+ .election-table thead th:nth-child(4),.election-table thead th:nth-child(5){width:14%}
+ .table-candidate-row th,.table-candidate-row td{padding:7px 3px;overflow-wrap:anywhere}
+ .election-table .candidate-name{display:block;max-width:100%;font-size:9px;line-height:1.35;padding:5px;white-space:normal;overflow-wrap:anywhere;min-height:0}
+ .election-table .candidate-name small{display:inline;font-size:8px;margin-left:3px;padding-left:3px}
+ .table-standing{display:block;font-size:8px;margin:3px 0 0}
+ .table-reporting small{font-size:7px;overflow-wrap:anywhere}
+ .table-race-heading th{padding:8px 6px}
+ .table-race-heading th>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 7px}
+ .table-race-heading .card-title{font-size:10px;line-height:1.35;min-width:0;overflow-wrap:anywhere}
+ .table-race-status{grid-row:2;grid-column:1/-1;font-size:8px;white-space:normal;overflow-wrap:anywhere}
+ .table-race-actions{grid-row:1;grid-column:2;gap:6px;margin-left:0;min-width:0}
+ .table-race-actions .text-button{font-size:9px;padding:3px 0}
+ .table-race-actions .add-race{font-size:9px;padding:4px 6px}
+ .table-empty-row td{font-size:9px;padding:10px 6px;overflow-wrap:anywhere}
+}
